@@ -1,42 +1,96 @@
-#root {
-  max-width: 1280px;
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f8f9fa;
+  margin: 0;
+  padding: 0;
+  color: #000; /* Set text color to black */
+}
+
+.App {
+  padding: 20px;
+}
+
+h1, h2 {
+  color: #343a40;
+}
+
+.nav-tabs .nav-link {
+  color: #495057;
+}
+
+.nav-tabs .nav-link.active {
+  color: #fff;
+  background-color: #007bff;
+  border-color: #007bff;
+}
+
+.table th, .table td {
+  vertical-align: middle;
+}
+
+.table thead th {
+  background-color: #e9ecef;
+}
+
+.table tbody tr:hover {
+  background-color: #f1f3f5;
+}
+
+.modal-header, .modal-footer {
+  background-color: #f8f9fa;
+}
+
+.modal-title {
+  color: #343a40;
+}
+
+.btn-primary {
+  background-color: #007bff;
+  border-color: #007bff;
+}
+
+.btn-danger {
+  background-color: #dc3545;
+  border-color: #dc3545;
+}
+
+.btn-secondary {
+  background-color: #6c757d;
+  border-color: #6c757d;
+}
+
+.form-control {
+  border-radius: 0.25rem;
+  background-color: #fff; /* Set input fields background color to white */
+  margin-top: 0.5rem; /* Add padding between labels and input fields */
+  color: #212529;
+}
+
+.form-check-input {
+  margin-top: 0.3rem;
+}
+
+.form-check-label {
+  margin-left: 0.5rem;
+}
+.form-label {
+  margin-top: 0.3rem;
+  display: block;
+}
+
+.container {
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 0.25rem;
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+.form-group {
+  margin-bottom: 1.5rem; /* Add padding between form groups */
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
-}
-
-.card {
-  padding: 2em;
-}
-
-.read-the-docs {
-  color: #888;
+.btn-primary {
+  margin-top: 1rem; /* Add padding above the button */
 }
