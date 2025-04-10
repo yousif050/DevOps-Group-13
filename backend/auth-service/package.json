@@ -1,20 +1,31 @@
 {
-  "name": "auth-service",
+  "name": "server",
   "version": "1.0.0",
+  "description": "",
   "main": "index.js",
   "scripts": {
+    "start": "nodemon user-auth-microservice",
+    "dev": "nodemon user-auth-microservice",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "",
   "dependencies": {
     "apollo-server-express": "^3.13.0",
+    "axios": "^1.8.4",
     "bcrypt": "^5.1.1",
+    "bcryptjs": "^3.0.2",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
     "express": "^4.21.2",
-    "graphql": "^16.10.0",
+    "graphql": "^16.8.1",
+    "graphql-tag": "^2.12.6",
     "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.13.1"
+    "mongodb": "^6.15.0",
+    "mongoose": "^8.12.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
   }
 }
