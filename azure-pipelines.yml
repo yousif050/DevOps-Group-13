@@ -20,7 +20,7 @@ stages:
           - task: UseNode@1
             inputs:
               version: '$(node_version)'
-
+          - checkout: self
           - script: |
               npm install
               cd frontend && npm install
