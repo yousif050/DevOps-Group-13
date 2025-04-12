@@ -9,15 +9,87 @@ trigger:
 pool:
   vmImage: ubuntu-latest
 
-steps:
-- task: NodeTool@0
-  inputs:
-    versionSpec: '20.x'
-  displayName: 'Install Node.js'
+variables:
+  node_version: '22.x'
 
-- script: |
-    cd backend/auth-service
-    npm install
-    cd ../../frontend/auth-frontend
-    npm install
-  displayName: 'Install dependencies'
+stages:
+  - stage: Install
+    jobs:
+      - job: InstallDependencies
+        steps:
+          - task: UseNode@1
+            inputs:
+              version: '$(node_version)'
+
+          - script: |
+              npm install
+              cd frontend && npm install
+              cd ../backend && npm install
+            displayName: 'Install dependencies'
+
+  - stage: Build
+    jobs:
+      - job: BuildApp
+        steps:
+          - task: UseNode@1
+            inputs:
+              version: '$(node_version)'
+
+          - script: |
+              cd frontend && npm run build
+              cd ../backend && npm run build
+            displayName: 'Build React + Express App'
+
+  # - stage: Analyze
+  #   jobs:
+  #     - job: SonarQubeAnalysis
+  #       steps:
+  #         - task: SonarQubePrepare@5
+  #           inputs:
+  #             SonarQube: 'SonarQubeServiceConnection'
+  #             scannerMode: 'CLI'
+  #             configMode: 'manual'
+  #             cliProjectKey: 'your-project-key'
+  #             cliProjectName: 'ReactExpressApp'
+  #             cliSources: '.'
+
+  #         - script: |
+  #             npm run lint
+  #           displayName: 'Lint and Analyze'
+
+  #         - task: SonarQubeAnalyze@5
+
+  #         - task: SonarQubePublish@5
+  #           inputs:
+  #             pollingTimeoutSec: '300'
+
+  # - stage: Test
+  #   jobs:
+  #     - job: RunTests
+  #       steps:
+  #         - script: |
+  #             cd server && npm test -- --coverage
+  #             cd ../client && npm test -- --coverage
+  #           displayName: 'Run Unit Tests and Coverage'
+
+  #         - task: PublishCodeCoverageResults@1
+  #           inputs:
+  #             codeCoverageTool: 'Cobertura'
+  #             summaryFileLocation: '**/coverage/cobertura-coverage.xml'
+  #             reportDirectory: '**/coverage'
+
+  - stage: Package
+    jobs:
+      - job: CreateArtifact
+        steps:
+          - task: CopyFiles@2
+            inputs:
+              contents: |
+                client/build/**
+                server/**
+              targetFolder: '$(Build.ArtifactStagingDirectory)'
+
+          - task: PublishBuildArtifacts@1
+            inputs:
+              PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+              ArtifactName: 'drop'
