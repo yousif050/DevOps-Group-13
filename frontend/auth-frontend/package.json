@@ -8,7 +8,8 @@
     "build": "vite build",
     "lint": "eslint src --ext js,jsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview --port=3001 --strictPort",
-    "deploy": "npm run build && npm run preview"
+    "deploy": "npm run build && npm run preview",
+     "test": "jest --coverage"
   },
   "dependencies": {
     "@apollo/client": "^3.9.5",
