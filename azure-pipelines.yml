@@ -6,109 +6,159 @@ pool:
 
 variables:
   node_version: '22.x'
+  app_port: 3000
 
 stages:
-  - stage: Install
-    jobs:
-      - job: InstallDependencies
-        steps:
-          - task: UseNode@1
-            inputs:
-              version: '$(node_version)'
-          
-          - checkout: self
-          
-          - script: |
-              npm ci
-              cd frontend/auth-frontend && npm ci && npm install vite --save-dev && npm install jest --save-dev && cd ../..
-              cd frontend/community-frontend && npm ci && npm install vite --save-dev && npm install jest --save-dev && cd ../..
-              cd backend/auth-service && npm ci && cd ../..
-              cd backend/community-service && npm ci && cd ../..
-            displayName: 'Install dependencies with npm ci'
-
-  - stage: BuildAndTest
-    jobs:
-      - job: BuildTestApp
-        steps:
-          - task: UseNode@1
-            inputs:
-              version: '$(node_version)'
-
-          - checkout: self
-
-          - script: |
-              # Build and test auth-frontend
-              cd frontend/auth-frontend
-              npm ci
-              npm install vite --save-dev
-              npm install jest --save-dev
-              npm run build
-              npm run test -- --coverage
-              cd ../..
-
-              # Build and test community-frontend
-              cd frontend/community-frontend
-              npm ci
-              npm install vite --save-dev
-              npm install jest --save-dev
-              npm run build
-              npm run test -- --coverage
-              cd ../..
-              echo "Test auth-service"
-              cd backend/auth-service
-              npm ci
-              npm test -- --coverage
-              cd ../..
-
-              echo "Test community-service"
-              cd backend/community-service
-              npm ci
-              npm test -- --coverage
-              cd ../..
-            displayName: 'Build, Test, and Generate Coverage'
-          - task: PublishCodeCoverageResults@1
-            displayName: 'Publish Auth Frontend Coverage'
-            inputs:
-              codeCoverageTool: 'Cobertura'
-              summaryFileLocation: 'frontend/auth-frontend/coverage/cobertura-coverage.xml'
-              reportDirectory: 'frontend/auth-frontend/coverage'
-
-          - task: PublishCodeCoverageResults@1
-            displayName: 'Publish Community Frontend Coverage'
-            inputs:
-              codeCoverageTool: 'Cobertura'
-              summaryFileLocation: 'frontend/community-frontend/coverage/cobertura-coverage.xml'
-              reportDirectory: 'frontend/community-frontend/coverage'
-          
-          - task: PublishCodeCoverageResults@1
-            displayName: 'Publish Auth Service Coverage'
-            inputs:
-              codeCoverageTool: 'Cobertura'
-              summaryFileLocation: 'backend/auth-service/coverage/cobertura-coverage.xml'
-              reportDirectory: 'backend/auth-service/coverage'
-
-          - task: PublishCodeCoverageResults@1
-            displayName: 'Publish Community Service Coverage'
-            inputs:
-              codeCoverageTool: 'Cobertura'
-              summaryFileLocation: 'backend/community-service/coverage/cobertura-coverage.xml'
-              reportDirectory: 'backend/community-service/coverage'
 
 
+# INSTALL
 
-  - stage: Package
-    jobs:
-      - job: CreateArtifact
-        steps:
-          - task: CopyFiles@2
-            inputs:
-              contents: |
-                frontend/auth-frontend/dist/**
-                frontend/community-frontend/dist/**
-                backend/**
-              targetFolder: '$(Build.ArtifactStagingDirectory)'
+- stage: Install
+  jobs:
+    - job: InstallDependencies
+      steps:
+        - task: UseNode@1
+          inputs:
+            version: '$(node_version)'
 
-          - task: PublishBuildArtifacts@1
-            inputs:
-              PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-              ArtifactName: 'drop'
+        - checkout: self
+
+        - script: |
+            npm ci
+            cd frontend/auth-frontend && npm ci && npm install vite --save-dev && npm install jest --save-dev && cd ../..
+            cd frontend/community-frontend && npm ci && npm install vite --save-dev && npm install jest --save-dev && cd ../..
+            cd backend/auth-service && npm ci && cd ../..
+            cd backend/community-service && npm ci && cd ../..
+          displayName: 'Install dependencies'
+
+
+# BUILD & TEST
+
+- stage: BuildAndTest
+  dependsOn: Install
+  jobs:
+    - job: BuildTest
+      steps:
+        - task: UseNode@1
+          inputs:
+            version: '$(node_version)'
+
+        - checkout: self
+
+        - script: |
+            # Frontend
+            cd frontend/auth-frontend
+            npm ci
+            npm run build
+            npm run test -- --coverage
+            cd ../community-frontend
+            npm ci
+            npm run build
+            npm run test -- --coverage
+            cd ../..
+
+            # Backend
+            cd backend/auth-service
+            npm ci
+            npm test -- --coverage
+            cd ../community-service
+            npm ci
+            npm test -- --coverage
+            cd ../..
+          displayName: 'Build and Test All'
+
+        - task: PublishCodeCoverageResults@1
+          displayName: 'Publish Code Coverage (Auth Frontend)'
+          inputs:
+            codeCoverageTool: 'Cobertura'
+            summaryFileLocation: 'frontend/auth-frontend/coverage/cobertura-coverage.xml'
+            reportDirectory: 'frontend/auth-frontend/coverage'
+
+        - task: PublishCodeCoverageResults@1
+          displayName: 'Publish Code Coverage (Community Frontend)'
+          inputs:
+            codeCoverageTool: 'Cobertura'
+            summaryFileLocation: 'frontend/community-frontend/coverage/cobertura-coverage.xml'
+            reportDirectory: 'frontend/community-frontend/coverage'
+
+        - task: PublishCodeCoverageResults@1
+          displayName: 'Publish Code Coverage (Auth Service)'
+          inputs:
+            codeCoverageTool: 'Cobertura'
+            summaryFileLocation: 'backend/auth-service/coverage/cobertura-coverage.xml'
+            reportDirectory: 'backend/auth-service/coverage'
+
+        - task: PublishCodeCoverageResults@1
+          displayName: 'Publish Code Coverage (Community Service)'
+          inputs:
+            codeCoverageTool: 'Cobertura'
+            summaryFileLocation: 'backend/community-service/coverage/cobertura-coverage.xml'
+            reportDirectory: 'backend/community-service/coverage'
+
+# DELIVER: Package Artifacts
+- stage: Deliver
+  dependsOn: BuildAndTest
+  jobs:
+    - job: CreateArtifact
+      steps:
+        - task: CopyFiles@2
+          inputs:
+            contents: |
+              frontend/auth-frontend/dist/**
+              frontend/community-frontend/dist/**
+              backend/**
+            targetFolder: '$(Build.ArtifactStagingDirectory)'
+
+        - task: PublishBuildArtifacts@1
+          inputs:
+            PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+            ArtifactName: 'drop'
+
+# DEPLOY STAGES
+
+- stage: Deploy_Dev
+  displayName: 'Deploy to Dev Environment'
+  dependsOn: Deliver
+  jobs:
+    - job: DeployDev
+      steps:
+        - download: current
+          artifact: drop
+        - script: |
+            echo "[DEV] Starting Mock Deployment on port $(app_port)"
+            echo "App would be served on http://localhost:$(app_port)"
+            # node backend/auth-service/index.js # ← simulate app launch here if needed
+          displayName: 'Mock Deploy to Dev'
+
+- stage: Deploy_QAT
+  displayName: 'Deploy to QAT Environment'
+  dependsOn: Deploy_Dev
+  jobs:
+    - job: DeployQAT
+      steps:
+        - download: current
+          artifact: drop
+        - script: echo "[QAT] Mock deployment complete."
+          displayName: 'Mock Deploy to QAT'
+
+- stage: Deploy_Staging
+  displayName: 'Deploy to Staging Environment'
+  dependsOn: Deploy_QAT
+  jobs:
+    - job: DeployStaging
+      steps:
+        - download: current
+          artifact: drop
+        - script: echo "[Staging] Mock deployment complete."
+          displayName: 'Mock Deploy to Staging'
+
+- stage: Deploy_Prod
+  displayName: 'Deploy to Production Environment'
+  dependsOn: Deploy_Staging
+  jobs:
+    - job: DeployProd
+      steps:
+        - download: current
+          artifact: drop
+        - script: echo "[Production] Deployed successfully."
+          displayName: 'Mock Deploy to Production'
