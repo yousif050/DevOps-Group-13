@@ -20,11 +20,13 @@ stages:
           - task: UseNode@1
             inputs:
               version: '$(node_version)'
+          
           - checkout: self
+          
           - script: |
               npm ci
-              cd frontend/auth-frontend && npm ci && cd ../..
-              cd frontend/community-frontend && npm ci && cd ../..
+              cd frontend/auth-frontend && npm ci && npm install vite --save-dev && cd ../..
+              cd frontend/community-frontend && npm ci && npm install vite --save-dev && cd ../..
               cd backend/auth-service && npm ci && cd ../..
               cd backend/community-service && npm ci && cd ../..
             displayName: 'Install dependencies with npm ci'
@@ -36,16 +38,10 @@ stages:
           - task: UseNode@1
             inputs:
               version: '$(node_version)'
-          
-          # Install Vite globally to ensure it's available for builds
-          - script: |
-              npm install -g vite
-            displayName: 'Install Vite Globally'
 
-          # Now build with the globally installed Vite
           - script: |
-              cd frontend/auth-frontend && npm run build
-              cd ../community-frontend && npm run build
+              cd frontend/auth-frontend && npm run build && cd ../..
+              cd frontend/community-frontend && npm run build && cd ../..
             displayName: 'Build React'
 
   - stage: Package
