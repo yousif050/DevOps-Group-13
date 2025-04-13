@@ -22,12 +22,12 @@ stages:
               version: '$(node_version)'
           - checkout: self
           - script: |
-              npm install
-              cd frontend/auth-frontend && npm install
-              cd ../community-frontend && npm install
-              cd ../../backend/auth-service && npm install
-              cd ../community-service && npm install
-            displayName: 'Install dependencies'
+              npm ci
+              cd frontend/auth-frontend && npm ci && cd ../..
+              cd frontend/community-frontend && npm ci && cd ../..
+              cd backend/auth-service && npm ci && cd ../..
+              cd backend/community-service && npm ci && cd ../..
+            displayName: 'Install dependencies with npm ci'
 
   - stage: Build
     jobs:
@@ -40,9 +40,7 @@ stages:
           - script: |
               cd frontend/auth-frontend && npm run build
               cd ../community-frontend && npm run build
-              cd ../../backend/auth-service && node user-auth-microservice.js
-              cd ../community-service && node community-engagement-microservice.js
-            displayName: 'Build React + Express App'
+            displayName: 'Build React'
 
   # - stage: Analyze
   #   jobs:
