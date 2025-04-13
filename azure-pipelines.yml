@@ -54,8 +54,18 @@ stages:
               npm run build
               npm run test -- --coverage
               cd ../..
-            displayName: 'Build, Test, and Generate Coverage'
+              echo "Test auth-service"
+              cd backend/auth-service
+              npm ci
+              npm test -- --coverage
+              cd ../..
 
+              echo "Test community-service"
+              cd backend/community-service
+              npm ci
+              npm test -- --coverage
+              cd ../..
+            displayName: 'Build, Test, and Generate Coverage'
           - task: PublishCodeCoverageResults@1
             displayName: 'Publish Auth Frontend Coverage'
             inputs:
@@ -69,6 +79,21 @@ stages:
               codeCoverageTool: 'Cobertura'
               summaryFileLocation: 'frontend/community-frontend/coverage/cobertura-coverage.xml'
               reportDirectory: 'frontend/community-frontend/coverage'
+          
+          - task: PublishCodeCoverageResults@1
+            displayName: 'Publish Auth Service Coverage'
+            inputs:
+              codeCoverageTool: 'Cobertura'
+              summaryFileLocation: 'backend/auth-service/coverage/cobertura-coverage.xml'
+              reportDirectory: 'backend/auth-service/coverage'
+
+          - task: PublishCodeCoverageResults@1
+            displayName: 'Publish Community Service Coverage'
+            inputs:
+              codeCoverageTool: 'Cobertura'
+              summaryFileLocation: 'backend/community-service/coverage/cobertura-coverage.xml'
+              reportDirectory: 'backend/community-service/coverage'
+
 
 
   - stage: Package
