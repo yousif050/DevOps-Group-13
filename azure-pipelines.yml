@@ -39,10 +39,16 @@ stages:
             inputs:
               version: '$(node_version)'
 
+          - checkout: self
+
           - script: |
               cd frontend/auth-frontend
+              npm ci
+              npm install vite --save-dev
               npm run build
               cd ../community-frontend
+              npm ci
+              npm install vite --save-dev
               npm run build
             displayName: 'Build React'
   - stage: Package
