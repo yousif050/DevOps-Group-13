@@ -1,8 +1,3 @@
-# Node.js
-# Build a general Node.js project with npm.
-# Add steps that analyze code, save build artifacts, deploy, and more:
-# https://docs.microsoft.com/azure/devops/pipelines/languages/javascript
-
 trigger:
 - master
 
@@ -25,15 +20,15 @@ stages:
           
           - script: |
               npm ci
-              cd frontend/auth-frontend && npm ci && npm install vite --save-dev && cd ../..
-              cd frontend/community-frontend && npm ci && npm install vite --save-dev && cd ../..
+              cd frontend/auth-frontend && npm ci && npm install vite --save-dev && npm install jest --save-dev && cd ../..
+              cd frontend/community-frontend && npm ci && npm install vite --save-dev && npm install jest --save-dev && cd ../..
               cd backend/auth-service && npm ci && cd ../..
               cd backend/community-service && npm ci && cd ../..
             displayName: 'Install dependencies with npm ci'
 
-  - stage: Build
+  - stage: BuildAndTest
     jobs:
-      - job: BuildApp
+      - job: BuildTestApp
         steps:
           - task: UseNode@1
             inputs:
@@ -42,15 +37,40 @@ stages:
           - checkout: self
 
           - script: |
+              # Build and test auth-frontend
               cd frontend/auth-frontend
               npm ci
               npm install vite --save-dev
+              npm install jest --save-dev
               npm run build
-              cd ../community-frontend
+              npm run test -- --coverage
+              cd ../..
+
+              # Build and test community-frontend
+              cd frontend/community-frontend
               npm ci
               npm install vite --save-dev
+              npm install jest --save-dev
               npm run build
-            displayName: 'Build React'
+              npm run test -- --coverage
+              cd ../..
+            displayName: 'Build, Test, and Generate Coverage'
+
+          - task: PublishCodeCoverageResults@1
+            displayName: 'Publish Auth Frontend Coverage'
+            inputs:
+              codeCoverageTool: 'Cobertura'
+              summaryFileLocation: 'frontend/auth-frontend/coverage/cobertura-coverage.xml'
+              reportDirectory: 'frontend/auth-frontend/coverage'
+
+          - task: PublishCodeCoverageResults@1
+            displayName: 'Publish Community Frontend Coverage'
+            inputs:
+              codeCoverageTool: 'Cobertura'
+              summaryFileLocation: 'frontend/community-frontend/coverage/cobertura-coverage.xml'
+              reportDirectory: 'frontend/community-frontend/coverage'
+
+
   - stage: Package
     jobs:
       - job: CreateArtifact
