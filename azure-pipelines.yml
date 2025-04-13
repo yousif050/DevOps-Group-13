@@ -40,10 +40,11 @@ stages:
               version: '$(node_version)'
 
           - script: |
-              cd frontend/auth-frontend && npm run build && cd ../..
-              cd frontend/community-frontend && npm run build && cd ../..
+              cd frontend/auth-frontend
+              npm run build
+              cd ../community-frontend
+              npm run build
             displayName: 'Build React'
-
   - stage: Package
     jobs:
       - job: CreateArtifact
