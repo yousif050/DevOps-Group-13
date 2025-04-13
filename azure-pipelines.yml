@@ -36,6 +36,10 @@ stages:
           - task: UseNode@1
             inputs:
               version: '$(node_version)'
+          - script: |
+              cd frontend/auth-frontend && npx vite --version && cd ../..
+              cd frontend/community-frontend && npx vite --version && cd ../..
+            displayName: 'Verify Vite Installation'
 
           - script: |
               cd frontend/auth-frontend && npm run build
