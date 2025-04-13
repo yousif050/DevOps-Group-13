@@ -37,13 +37,12 @@ stages:
             inputs:
               version: '$(node_version)'
           
-          # Verify Vite BEFORE building
+          # Install Vite globally to ensure it's available for builds
           - script: |
-              cd frontend/auth-frontend && npx vite --version && cd ../..
-              cd frontend/community-frontend && npx vite --version && cd ../..
-            displayName: 'Verify Vite Installation'
+              npm install -g vite
+            displayName: 'Install Vite Globally'
 
-          # Now build after Vite is verified
+          # Now build with the globally installed Vite
           - script: |
               cd frontend/auth-frontend && npm run build
               cd ../community-frontend && npm run build
