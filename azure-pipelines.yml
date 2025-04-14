@@ -10,6 +10,7 @@ variables:
 
 stages:
 
+
 # INSTALL
 
 - stage: Install
@@ -44,103 +45,27 @@ stages:
 
         - checkout: self
 
-        # Install Java 17 using the Java tool installer
-        - task: JavaToolInstaller@0
-          inputs:
-            versionSpec: '17'
-            jdkArchitectureOption: 'x64'
-            jdkSourceOption: 'PreInstalled'
-          displayName: 'Setup Java 17'
-
-        # Verify Java version
         - script: |
-            java -version
-            echo "JAVA_HOME=$JAVA_HOME"
-          displayName: 'Verify Java 17 Installation'
-
-        # Set environment variables that will be used by all subsequent steps
-        - bash: |
-            echo "##vso[task.setvariable variable=JAVA_HOME_11_X64]$JAVA_HOME"
-            echo "##vso[task.setvariable variable=JAVA_HOME]$JAVA_HOME"
-            echo "##vso[task.setvariable variable=PATH]$JAVA_HOME/bin:$PATH"
-          displayName: 'Set Java Environment Variables'
-
-        # --- SonarQube Analysis: Prepare Phase ---
-        - task: SonarCloudPrepare@1
-          inputs:
-            SonarCloud: 'DevOps-Group-13'
-            organization: 'yousif050'
-            scannerMode: 'CLI'
-            configMode: 'manual'
-            cliProjectKey: 'yousif050_DevOps-Group-13'
-            cliProjectName: 'DevOps-Group-13'
-            extraProperties: |
-              # Force SonarQube to use our Java installation
-              sonar.scanner.force-java-version=true
-              sonar.java.jdkHome=$(JAVA_HOME)
-          displayName: 'Prepare SonarQube Analysis'
-
-        - script: |
-            # Frontend: auth-frontend
+            # Frontend
             cd frontend/auth-frontend
             npm ci
             npm run build
             npm run test -- --coverage
             cd ../community-frontend
-
-            # Frontend: community-frontend
             npm ci
             npm run build
             npm run test -- --coverage
             cd ../..
 
-            # Backend: auth-service
+            # Backend
             cd backend/auth-service
             npm ci
             npm test -- --coverage
             cd ../community-service
-
-            # Backend: community-service
             npm ci
             npm test -- --coverage
             cd ../..
           displayName: 'Build and Test All'
-
-        # --- Use newer SonarQube Scanner task or run it manually ---
-        - bash: |
-            # Create a script to set Java 17 for the SonarQube scanner
-            cat > sonar-wrapper.sh << 'EOL'
-            #!/bin/bash
-            export JAVA_HOME=$(dirname $(dirname $(readlink -f $(which java))))
-            echo "JAVA_HOME set to: $JAVA_HOME"
-            java -version
-            
-            # Use the SonarQube scanner with our Java version
-            $(dirname "$0")/sonar-scanner "$@"
-            EOL
-            
-            # Make it executable
-            chmod +x sonar-wrapper.sh
-            
-            # Replace the original scanner with our wrapper
-            SONAR_SCANNER_PATH="/home/vsts/work/_tasks/SonarQubeAnalyze_6d01813a-9589-4b15-8491-8164aeb38055/5.20.1/sonar-scanner/bin/sonar-scanner"
-            SONAR_DIR=$(dirname "$SONAR_SCANNER_PATH")
-            cp sonar-wrapper.sh "$SONAR_DIR/"
-            mv "$SONAR_SCANNER_PATH" "$SONAR_SCANNER_PATH.orig"
-            cp sonar-wrapper.sh "$SONAR_SCANNER_PATH"
-          displayName: 'Setup SonarQube Scanner Wrapper'
-          
-        # Now run the SonarQube Analysis
-        - task: SonarQubeAnalyze@5
-          displayName: 'Run SonarQube Analysis'
-          env:
-            JAVA_HOME: $(JAVA_HOME)
-            PATH: $(JAVA_HOME)/bin:$(PATH)
-
-        - task: SonarQubePublish@5
-          inputs:
-            pollingTimeoutSec: '300'
-          displayName: 'Publish SonarQube Results'
 
         - task: PublishCodeCoverageResults@1
           displayName: 'Publish Code Coverage (Auth Frontend)'
@@ -169,7 +94,6 @@ stages:
             codeCoverageTool: 'Cobertura'
             summaryFileLocation: 'backend/community-service/coverage/cobertura-coverage.xml'
             reportDirectory: 'backend/community-service/coverage'
-
 
 # DELIVER: Package Artifacts
 - stage: Deliver
