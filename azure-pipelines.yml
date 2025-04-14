@@ -44,9 +44,11 @@ stages:
 
         - checkout: self
 
-        # --- Add Java 17 setup step ---
+        # Ensure Java 17 is installed and set as default
         - script: |
             echo "Switching to Java 17"
+            sudo apt-get update
+            sudo apt-get install openjdk-17-jdk -y
             sudo update-java-alternatives --set java-1.17.0-openjdk-amd64
             java -version
           displayName: 'Set Java 17 for SonarQube'
@@ -123,6 +125,7 @@ stages:
             codeCoverageTool: 'Cobertura'
             summaryFileLocation: 'backend/community-service/coverage/cobertura-coverage.xml'
             reportDirectory: 'backend/community-service/coverage'
+
 
 
 # DELIVER: Package Artifacts
