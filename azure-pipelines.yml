@@ -44,14 +44,19 @@ stages:
 
         - checkout: self
 
-        # Ensure Java 17 is installed and set as default
+        # Install Java 17 BEFORE SonarQube prepare
+        - task: JavaToolInstaller@0
+          inputs:
+            versionSpec: '17'
+            jdkArchitectureOption: 'x64'
+            jdkSourceOption: 'PreInstalled'
+          displayName: 'Setup Java 17'
+
+        # Verify Java version
         - script: |
-            echo "Switching to Java 17"
-            sudo apt-get update
-            sudo apt-get install openjdk-17-jdk -y
-            sudo update-java-alternatives --set java-1.17.0-openjdk-amd64
             java -version
-          displayName: 'Set Java 17 for SonarQube'
+            echo "JAVA_HOME=$JAVA_HOME"
+          displayName: 'Verify Java 17 Installation'
 
         # --- SonarQube Analysis: Prepare Phase ---
         - task: SonarCloudPrepare@1
@@ -92,6 +97,8 @@ stages:
         # --- SonarQube Analysis: Run & Publish Phases ---
         - task: SonarQubeAnalyze@5
           displayName: 'Run SonarQube Analysis'
+          env:
+            JAVA_HOME: $(JAVA_HOME)
 
         - task: SonarQubePublish@5
           inputs:
@@ -125,7 +132,6 @@ stages:
             codeCoverageTool: 'Cobertura'
             summaryFileLocation: 'backend/community-service/coverage/cobertura-coverage.xml'
             reportDirectory: 'backend/community-service/coverage'
-
 
 
 # DELIVER: Package Artifacts
