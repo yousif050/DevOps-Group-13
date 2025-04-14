@@ -44,6 +44,13 @@ stages:
 
         - checkout: self
 
+        # --- Add Java 17 setup step ---
+        - script: |
+            echo "Switching to Java 17"
+            sudo update-java-alternatives --set java-1.17.0-openjdk-amd64
+            java -version
+          displayName: 'Set Java 17 for SonarQube'
+
         # --- SonarQube Analysis: Prepare Phase ---
         - task: SonarCloudPrepare@1
           inputs:
@@ -53,7 +60,6 @@ stages:
             configMode: 'manual'
             cliProjectKey: 'yousif050_DevOps-Group-13'
             cliProjectName: 'DevOps-Group-13'
-
 
         - script: |
             # Frontend: auth-frontend
@@ -117,6 +123,7 @@ stages:
             codeCoverageTool: 'Cobertura'
             summaryFileLocation: 'backend/community-service/coverage/cobertura-coverage.xml'
             reportDirectory: 'backend/community-service/coverage'
+
 
 # DELIVER: Package Artifacts
 - stage: Deliver
