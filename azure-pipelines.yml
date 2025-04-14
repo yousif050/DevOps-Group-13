@@ -10,6 +10,7 @@ variables:
 
 stages:
 
+
 # INSTALL
 
 - stage: Install
@@ -44,51 +45,27 @@ stages:
 
         - checkout: self
 
-        # --- SonarQube Analysis: Prepare Phase ---
-        - task: SonarQubePrepare@5
-          inputs:
-            SonarQube: 'DevOps-Group-13'         
-            scannerMode: 'CLI'
-            configMode: 'manual'
-            cliProjectKey: 'yousif050_DevOps-Group-13'              
-            cliProjectName: 'DevOps-Group-13'             
-            cliProjectVersion: '1.0'                  
-          displayName: 'Prepare SonarQube Analysis'
-
         - script: |
-            # Frontend: auth-frontend
+            # Frontend
             cd frontend/auth-frontend
             npm ci
             npm run build
             npm run test -- --coverage
             cd ../community-frontend
-
-            # Frontend: community-frontend
             npm ci
             npm run build
             npm run test -- --coverage
             cd ../..
 
-            # Backend: auth-service
+            # Backend
             cd backend/auth-service
             npm ci
             npm test -- --coverage
             cd ../community-service
-
-            # Backend: community-service
             npm ci
             npm test -- --coverage
             cd ../..
           displayName: 'Build and Test All'
-
-        # --- SonarQube Analysis: Run & Publish Phases ---
-        - task: SonarQubeAnalyze@5
-          displayName: 'Run SonarQube Analysis'
-
-        - task: SonarQubePublish@5
-          inputs:
-            pollingTimeoutSec: '300'
-          displayName: 'Publish SonarQube Results'
 
         - task: PublishCodeCoverageResults@1
           displayName: 'Publish Code Coverage (Auth Frontend)'
